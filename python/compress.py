@@ -11,18 +11,25 @@ def compress(input_string: str) -> [(int, int, str)]:
     output = []
 
     while input_array is not "":
-        print(input_array)
+        print(f"Input: {input_array}")
+        print(f"Window: {window}")
         # Number of characters to go back
         offset = 0
         # Number of characters to go forwards from this point
         length = 0
+
+        matched_term = input_array[0]
 
         while input_array[: (length + 1)] in window and (length + 1) <= len(
             input_array
         ):
             length += 1
 
-        matched_term = input_array[: (length + 1)]
+        if length == 0:
+            matched_term = input_array[0]
+        else:
+            matched_term = input_array[:length]
+        print(f"Matched: {matched_term}")
 
         if length > 0:
             offset = len(window) - window.find(matched_term)
@@ -36,7 +43,10 @@ def compress(input_string: str) -> [(int, int, str)]:
 
         output.append(result)
 
-        input_array = input_array[(length + 1) :]
+        if length == 0:
+            input_array = input_array[1:]
+        else:
+            input_array = input_array[length:]
         window += matched_term
 
     return output
