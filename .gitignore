@@ -1,2 +1,4 @@
 /.vscode/
 /python/__pycache__/
+/python/.hypothesis/
+/python/.pytest_cache/
