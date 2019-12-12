@@ -51,3 +51,16 @@ def compress(input_string: str) -> [(int, int, str)]:
 
     return output
 
+def to_bytes(compressed_representation: [(int, int, str)]) -> bytes:
+    """Turn the compression representation into a byte array"""
+    output = bytes()
+
+    for value in compressed_representation:
+        """5 bits for offset, 3 for length, 1 byte for character"""
+        offset, length, char = value
+        if char is not None:
+            output = output + ((offset << 3) + length).to_bytes(1, byteorder='big') + char.encode('utf-8')
+        else:
+            output = output + ((offset << 3) + length).to_bytes(1, byteorder='big') + b'\x00'
+
+    return output
