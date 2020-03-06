@@ -34,3 +34,27 @@ class Test_To_And_From_Bytes_For_Simple_Strings:
     @given(text(alphabet=string.printable, max_size=15))
     def test_simple_strings(self, s):
         assert decompress(from_bytes(to_bytes(compress(s)))) == s
+
+
+class Test_Decompress_Run_Length_Encoding:
+    def test_single_characters(self):
+        assert decompress([(0, 0, "x"), (0, 0, "y"), (0, 0, "z")]) == "xyz"
+
+    def test_simple_case(self):
+        assert decompress([(0, 2, "A"), (0, 3, "B"), (0, 4, "C")]) == "AABBBCCCC"
+
+    def test_decode_many_values(self):
+        assert (
+            decompress(
+                [
+                    (0, 12, "W"),
+                    (0, 0, "B"),
+                    (0, 12, "W"),
+                    (0, 3, "B"),
+                    (0, 24, "W"),
+                    (0, 0, "B"),
+                ]
+            )
+            == "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWB"
+        )
+

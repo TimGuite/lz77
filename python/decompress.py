@@ -15,11 +15,17 @@ def decompress(compressed: List[Tuple[int, int, str]]) -> str:
             if char is not None:
                 output += char
         else:
+            if offset == 0:
+                if char is not None:
+                    output += char
+                    length -= 1
+                    offset = 1
             start_index = len(output) - offset
             for i in range(length):
                 output += output[start_index + i]
 
     return output
+
 
 def from_bytes(compressed_bytes: bytes) -> [(int, int, str)]:
     """Take in the compressed format and return a higher level representation"""
@@ -29,13 +35,13 @@ def from_bytes(compressed_bytes: bytes) -> [(int, int, str)]:
     output = []
 
     for index in range(len(compressed_bytes) // 2):
-        counts = compressed_bytes[2*index]
-        char = compressed_bytes[(2*index)+1]
+        counts = compressed_bytes[2 * index]
+        char = compressed_bytes[(2 * index) + 1]
 
         offset = (counts & 0b11111000) >> 3
         length = counts & 0b00000111
 
-        if char == b'\x00':
+        if char == b"\x00":
             char_out = None
         else:
             char_out = chr(char)
