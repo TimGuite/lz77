@@ -51,6 +51,7 @@ def compress(input_string: str) -> [(int, int, str)]:
 
     return output
 
+
 def to_bytes(compressed_representation: [(int, int, str)]) -> bytes:
     """Turn the compression representation into a byte array"""
     output = bytes()
@@ -59,8 +60,55 @@ def to_bytes(compressed_representation: [(int, int, str)]) -> bytes:
         """5 bits for offset, 3 for length, 1 byte for character"""
         offset, length, char = value
         if char is not None:
-            output = output + ((offset << 3) + length).to_bytes(1, byteorder='big') + char.encode('utf-8')
+            output = (
+                output
+                + ((offset << 3) + length).to_bytes(1, byteorder="big")
+                + char.encode("utf-8")
+            )
         else:
-            output = output + ((offset << 3) + length).to_bytes(1, byteorder='big') + b'\x00'
+            output = (
+                output + ((offset << 3) + length).to_bytes(1, byteorder="big") + b"\x00"
+            )
 
     return output
+
+
+def compress2(window: str, input_string: str) -> (int, int):
+    """Take the window and an input string and return the offset and length
+    with the biggest length of the input string as a substring"""
+
+    # Return (0, 0) if the string provided is empty
+    if input_string is None or input_string == "":
+        return (0, 0)
+
+    # Initialise result parameters - best case so far
+    length, offset = (1, 0)
+
+    # This should also catch the empty window case
+    if input_string[0] not in window:
+        best_length, _ = compress2(input_string[0], input_string[1:])
+        return (length + best_length, offset)
+
+    # Test for every string in the window, in reverse order to keep the offset as low as possible
+    for index in range(1, (len(window) + 1)):
+        # Get the character at this offset
+        char = window[-index]
+        if char == input_string[0]:
+            found_length = 1
+            found_offset = index
+            # Collect any further strings which can be found
+            (next_length, _) = compress2(
+                window[-index:] + input_string[0], input_string[1:]
+            )
+            if next_length > 0:
+                found_length += next_length
+            if found_length > length:
+                length = found_length
+                offset = found_offset
+    return (found_length, offset)
+
+
+a = compress2("", "a")
+b = compress2("a123", "a")
+c = compress2("", "aaaaa")
+print("Done")
