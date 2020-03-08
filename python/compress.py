@@ -73,7 +73,7 @@ def to_bytes(compressed_representation: [(int, int, str)]) -> bytes:
     return output
 
 
-def compress2(window: str, input_string: str) -> (int, int):
+def best_length_offset(window: str, input_string: str) -> (int, int):
     """Take the window and an input string and return the offset and length
     with the biggest length of the input string as a substring"""
 
@@ -86,8 +86,11 @@ def compress2(window: str, input_string: str) -> (int, int):
 
     # This should also catch the empty window case
     if input_string[0] not in window:
-        best_length, _ = compress2(input_string[0], input_string[1:])
+        best_length, _ = best_length_offset(input_string[0], input_string[1:])
         return (length + best_length, offset)
+
+    # Best length now zero to allow occurences to take priority
+    length = 0
 
     # Test for every string in the window, in reverse order to keep the offset as low as possible
     for index in range(1, (len(window) + 1)):
@@ -97,7 +100,7 @@ def compress2(window: str, input_string: str) -> (int, int):
             found_length = 1
             found_offset = index
             # Collect any further strings which can be found
-            (next_length, _) = compress2(
+            (next_length, _) = best_length_offset(
                 window[-index:] + input_string[0], input_string[1:]
             )
             if next_length > 0:
@@ -108,7 +111,7 @@ def compress2(window: str, input_string: str) -> (int, int):
     return (found_length, offset)
 
 
-a = compress2("", "a")
-b = compress2("a123", "a")
-c = compress2("", "aaaaa")
+a = best_length_offset("", "a")
+b = best_length_offset("a123", "a")
+c = best_length_offset("", "aaaaa")
 print("Done")
