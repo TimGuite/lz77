@@ -27,3 +27,11 @@ def test_gets_repeating_pattern_from_window():
 
 def test_gets_longest_occurrence_in_window():
     assert best_length_offset("abc ab a", "abc") == (3, 8)
+
+
+def test_returns_only_up_to_maximum_length():
+    assert best_length_offset("", "aaaaa", max_length=3) == (3, 0)
+
+
+def test_looks_only_up_to_max_offset():
+    assert best_length_offset("a12345", "a", max_offset=3) == (1, 0)

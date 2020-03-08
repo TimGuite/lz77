@@ -79,6 +79,11 @@ def best_length_offset(
     """Take the window and an input string and return the offset and length
     with the biggest length of the input string as a substring"""
 
+    if max_offset < len(window):
+        cut_window = window[-max_offset:]
+    else:
+        cut_window = window
+
     # Return (0, 0) if the string provided is empty
     if input_string is None or input_string == "":
         return (0, 0)
@@ -87,33 +92,32 @@ def best_length_offset(
     length, offset = (1, 0)
 
     # This should also catch the empty window case
-    if input_string[0] not in window:
+    if input_string[0] not in cut_window:
         best_length, _ = best_length_offset(input_string[0], input_string[1:])
-        return (length + best_length, offset)
+        return (min((length + best_length), max_length), offset)
 
     # Best length now zero to allow occurences to take priority
     length = 0
 
     # Test for every string in the window, in reverse order to keep the offset as low as possible
     # Look for either the whole window or up to max offset away, whichever is smaller
-    for index in range(1, min((len(window) + 1), max_offset)):
+    for index in range(1, (len(cut_window) + 1)):
         # Get the character at this offset
-        char = window[-index]
+        char = cut_window[-index]
         if char == input_string[0]:
             found_offset = index
             # Collect any further strings which can be found
-            found_length = repeating_length_from_start(window[-index:], input_string)
+            found_length = repeating_length_from_start(
+                cut_window[-index:], input_string
+            )
             if found_length > length:
                 length = found_length
                 offset = found_offset
 
-    if length > max_length:
-        # Only return up to the maximum length
-        # This will capture the maximum number of characters allowed
-        # although it might not capture the maximum amount of characters *possible*
-        length = max_length
-
-    return (found_length, offset)
+    # Only return up to the maximum length
+    # This will capture the maximum number of characters allowed
+    # although it might not capture the maximum amount of characters *possible*
+    return (min(length, max_length), offset)
 
 
 def repeating_length_from_start(window: str, input_string: str) -> int:
@@ -122,7 +126,9 @@ def repeating_length_from_start(window: str, input_string: str) -> int:
         return 0
 
     if window[0] == input_string[0]:
-        return 1 + repeating_length_from_start(window[1:] + input_string[0], input_string[1:])
+        return 1 + repeating_length_from_start(
+            window[1:] + input_string[0], input_string[1:]
+        )
     else:
         return 0
 
@@ -131,4 +137,5 @@ a = best_length_offset("", "a")
 b = best_length_offset("a123", "a")
 c = best_length_offset("", "aaaaa")
 d = best_length_offset("abc ab a", "abc")
+e = best_length_offset("", "aaaaa", max_length=3)
 print("Done")
