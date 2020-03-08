@@ -73,7 +73,9 @@ def to_bytes(compressed_representation: [(int, int, str)]) -> bytes:
     return output
 
 
-def best_length_offset(window: str, input_string: str) -> (int, int):
+def best_length_offset(
+    window: str, input_string: str, max_length: int = 15, max_offset: int = 4095
+) -> (int, int):
     """Take the window and an input string and return the offset and length
     with the biggest length of the input string as a substring"""
 
@@ -93,25 +95,40 @@ def best_length_offset(window: str, input_string: str) -> (int, int):
     length = 0
 
     # Test for every string in the window, in reverse order to keep the offset as low as possible
-    for index in range(1, (len(window) + 1)):
+    # Look for either the whole window or up to max offset away, whichever is smaller
+    for index in range(1, min((len(window) + 1), max_offset)):
         # Get the character at this offset
         char = window[-index]
         if char == input_string[0]:
-            found_length = 1
             found_offset = index
             # Collect any further strings which can be found
-            (next_length, _) = best_length_offset(
-                window[-index:] + input_string[0], input_string[1:]
-            )
-            if next_length > 0:
-                found_length += next_length
+            found_length = repeating_length_from_start(window[-index:], input_string)
             if found_length > length:
                 length = found_length
                 offset = found_offset
+
+    if length > max_length:
+        # Only return up to the maximum length
+        # This will capture the maximum number of characters allowed
+        # although it might not capture the maximum amount of characters *possible*
+        length = max_length
+
     return (found_length, offset)
+
+
+def repeating_length_from_start(window: str, input_string: str) -> int:
+    """Get the maximum repeating length of the input from the start of the window"""
+    if window == "" or input_string == "":
+        return 0
+
+    if window[0] == input_string[0]:
+        return 1 + repeating_length_from_start(window[1:] + input_string[0], input_string[1:])
+    else:
+        return 0
 
 
 a = best_length_offset("", "a")
 b = best_length_offset("a123", "a")
 c = best_length_offset("", "aaaaa")
+d = best_length_offset("abc ab a", "abc")
 print("Done")
