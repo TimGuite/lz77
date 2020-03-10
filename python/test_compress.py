@@ -5,6 +5,14 @@ def test_provides_useable_response_for_no_input():
     assert best_length_offset("", "") == (0, 0)
 
 
+def test_returns_just_first_character_when_window_is_empty_and_input_is_not_same():
+    assert best_length_offset("", "ab") == (1, 0)
+
+
+def test_returns_longest_string_of_same_character_when_windows_is_empty():
+    assert best_length_offset("", "aaaab") == (4, 0)
+
+
 def test_gets_letter_from_front_of_window():
     assert best_length_offset("abcdefg", "a") == (1, 7)
 

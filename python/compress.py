@@ -2,7 +2,7 @@ def compress(input_string: str) -> [(int, int, str)]:
     """Compress the input string into a list of length, offset, char values"""
 
     # Create the input
-    input_array = input_string[:]
+    input_array = str(input_string[:])
 
     # Create a string of the characters which have been passed
     window = ""
@@ -10,44 +10,11 @@ def compress(input_string: str) -> [(int, int, str)]:
     ## Store output in this list
     output = []
 
-    while input_array is not "":
-        # print(f"Input: {input_array}")
-        # print(f"Window: {window}")
-        # Number of characters to go back
-        offset = 0
-        # Number of characters to go forwards from this point
-        length = 0
-
-        matched_term = input_array[0]
-
-        while input_array[: (length + 1)] in window and (length + 1) <= len(
-            input_array
-        ):
-            length += 1
-
-        if length == 0:
-            matched_term = input_array[0]
-        else:
-            matched_term = input_array[:length]
-        # print(f"Matched: {matched_term}")
-
-        if length > 0:
-            offset = len(window) - window.find(matched_term)
-
-        if length == 0 or length < len(input_array):
-            next_character = input_array[length]
-        else:
-            next_character = None
-
-        result = (offset, length, next_character)
-
-        output.append(result)
-
-        if length == 0:
-            input_array = input_array[1:]
-        else:
-            input_array = input_array[length:]
-        window += matched_term
+    while input_array != "":
+        length, offset = best_length_offset(window, input_array)
+        output.append((offset, length, input_array[0]))
+        window += input_array[:length]
+        input_array = input_array[length:]
 
     return output
 
@@ -93,7 +60,7 @@ def best_length_offset(
 
     # This should also catch the empty window case
     if input_string[0] not in cut_window:
-        best_length, _ = best_length_offset(input_string[0], input_string[1:])
+        best_length = repeating_length_from_start(input_string[0], input_string[1:])
         return (min((length + best_length), max_length), offset)
 
     # Best length now zero to allow occurences to take priority
@@ -131,11 +98,3 @@ def repeating_length_from_start(window: str, input_string: str) -> int:
         )
     else:
         return 0
-
-
-a = best_length_offset("", "a")
-b = best_length_offset("a123", "a")
-c = best_length_offset("", "aaaaa")
-d = best_length_offset("abc ab a", "abc")
-e = best_length_offset("", "aaaaa", max_length=3)
-print("Done")
