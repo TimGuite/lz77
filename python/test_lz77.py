@@ -31,7 +31,7 @@ class Test_To_And_From_Bytes_For_Simple_Strings:
         assert decompress(from_bytes(to_bytes(compress("aaaaa")))) == "aaaaa"
 
     # Only ascii at the moment
-    @given(text(alphabet=string.printable, max_size=15))
+    @given(text(alphabet=string.printable, max_size=20000))
     def test_simple_strings(self, s):
         assert decompress(from_bytes(to_bytes(compress(s)))) == s
 

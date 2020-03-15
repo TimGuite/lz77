@@ -1,5 +1,6 @@
 """Complement to the compress.py file, this will decompress files from their compressed state"""
 
+import logging
 from typing import List, Tuple
 
 
@@ -27,24 +28,36 @@ def decompress(compressed: List[Tuple[int, int, str]]) -> str:
     return output
 
 
-def from_bytes(compressed_bytes: bytes) -> [(int, int, str)]:
+def from_bytes(
+    compressed_bytes: bytes, offset_bits: int = 11, length_bits: int = 5,
+) -> [(int, int, str)]:
     """Take in the compressed format and return a higher level representation"""
-    # Currently using 5 bits for offset and 3 bits for length
-    assert len(compressed_bytes) % 2 == 0
+
+    assert (
+        offset_bits + length_bits
+    ) % 8 == 0, f"Please provide offset_bits and length_bits which add up to a multiple of 8, so they can be efficiently packed. Received {offset_bits} and {length_bits}."
+    offset_length_bytes = int((offset_bits + length_bits) / 8)
 
     output = []
 
-    for index in range(len(compressed_bytes) // 2):
-        counts = compressed_bytes[2 * index]
-        char = compressed_bytes[(2 * index) + 1]
+    while len(compressed_bytes) > 0:
+        offset_length_value = 0
+        for _ in range(offset_length_bytes):
+            offset_length_value = (offset_length_value * 256) + int(
+                compressed_bytes.pop(0)
+            )
 
-        offset = (counts & 0b11111000) >> 3
-        length = counts & 0b00000111
+        offset = offset_length_value >> length_bits
+        length = offset_length_value & ((2 ** length_bits) - 1)
+        logging.debug(f"Offset: {offset}")
+        logging.debug(f"Length: {length}")
 
-        if char == b"\x00":
+        if offset > 0:
             char_out = None
         else:
-            char_out = chr(char)
+            # Get the next character and convert to an ascii character
+            char_out = str(chr(compressed_bytes.pop(0)))
+
         output.append((offset, length, char_out))
 
     return output

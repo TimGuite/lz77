@@ -1,4 +1,9 @@
-def compress(input_string: str) -> [(int, int, str)]:
+import logging
+
+
+def compress(
+    input_string: str, max_offset: int = 2047, max_length: int = 31
+) -> [(int, int, str)]:
     """Compress the input string into a list of length, offset, char values"""
 
     # Create the input
@@ -11,7 +16,7 @@ def compress(input_string: str) -> [(int, int, str)]:
     output = []
 
     while input_array != "":
-        length, offset = best_length_offset(window, input_array)
+        length, offset = best_length_offset(window, input_array, max_length, max_offset)
         output.append((offset, length, input_array[0]))
         window += input_array[:length]
         input_array = input_array[length:]
@@ -19,23 +24,44 @@ def compress(input_string: str) -> [(int, int, str)]:
     return output
 
 
-def to_bytes(compressed_representation: [(int, int, str)]) -> bytes:
+def to_bytes(
+    compressed_representation: [(int, int, str)],
+    offset_bits: int = 11,
+    length_bits: int = 5,
+) -> bytearray:
     """Turn the compression representation into a byte array"""
-    output = bytes()
+    output = bytearray()
+
+    assert (
+        offset_bits + length_bits
+    ) % 8 == 0, f"Please provide offset_bits and length_bits which add up to a multiple of 8, so they can be efficiently packed. Received {offset_bits} and {length_bits}."
+    offset_length_bytes = int((offset_bits + length_bits) / 8)
 
     for value in compressed_representation:
-        """5 bits for offset, 3 for length, 1 byte for character"""
         offset, length, char = value
+        assert (
+            offset < 2 ** offset_bits
+        ), f"Offset of {offset} is too large, only have {offset_bits} to store this value"
+        assert (
+            length < 2 ** length
+        ), f"Length of {length} is too large, only have {length} to store this value"
+
+        offset_length_value = (offset << length_bits) + length
+        logging.debug(f"Offset: {offset}")
+        logging.debug(f"Length: {length}")
+        logging.debug(f"Offset and length: 0b{offset_length_value:b}")
+
+        for count in range(offset_length_bytes):
+            output.append(
+                (offset_length_value >> (8 * (offset_length_bytes - count - 1)))
+                & (0b11111111)
+            )
+
         if char is not None:
-            output = (
-                output
-                + ((offset << 3) + length).to_bytes(1, byteorder="big")
-                + char.encode("utf-8")
-            )
+            if offset == 0:
+                output.append(ord(char))
         else:
-            output = (
-                output + ((offset << 3) + length).to_bytes(1, byteorder="big") + b"\x00"
-            )
+            output.append(0)
 
     return output
 
