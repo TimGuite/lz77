@@ -61,3 +61,21 @@ def from_bytes(
         output.append((offset, length, char_out))
 
     return output
+
+
+def decompress_file(input_file: str, output_file: str):
+    """Open and read an input file, decompress it, and write the compressed
+    values to the output file"""
+    try:
+        with open(input_file, "rb") as f:
+            input_array = bytearray(f.read())
+    except FileNotFoundError:
+        print(f"Could not find input file at: {input_file}")
+        raise
+    except Exception:
+        raise
+
+    compressed_input = decompress(from_bytes(input_array))
+
+    with open(output_file, "w") as f:
+        f.write(compressed_input)

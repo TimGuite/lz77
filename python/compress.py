@@ -124,3 +124,21 @@ def repeating_length_from_start(window: str, input_string: str) -> int:
         )
     else:
         return 0
+
+
+def compress_file(input_file: str, output_file: str):
+    """Open and read an input file, compress it, and write the compressed
+    values to the output file"""
+    try:
+        with open(input_file) as f:
+            input_array = f.read()
+    except FileNotFoundError:
+        print(f"Could not find input file at: {input_file}")
+        raise
+    except Exception:
+        raise
+
+    compressed_input = to_bytes(compress(input_array))
+
+    with open(output_file, "wb") as f:
+        f.write(compressed_input)
