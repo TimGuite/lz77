@@ -29,7 +29,7 @@ def decompress(compressed: List[Tuple[int, int, str]]) -> str:
 
 
 def from_bytes(
-    compressed_bytes: bytes, offset_bits: int = 11, length_bits: int = 5,
+    compressed_bytes: bytearray, offset_bits: int = 11, length_bits: int = 5,
 ) -> [(int, int, str)]:
     """Take in the compressed format and return a higher level representation"""
 
